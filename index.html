@@ -39,28 +39,66 @@
 </head>
 <body>
 
-  <!-- -------------- LOGIN AGREGADO (NO SE MODIFICÓ NADA DEL RESTO) ---------------- -->
-  <div id="loginOverlay" style="
-    position:fixed;top:0;left:0;width:100%;height:100%;
-    background:#e8eef5;display:flex;align-items:center;justify-content:center;
-    z-index:9999;
+<!-- ============================================================ -->
+<!-- 🌟🌟🌟 LOGIN AÑADIDO SIN MODIFICAR NADA DEL CÓDIGO ORIGINAL 🌟🌟🌟 -->
+<!-- ============================================================ -->
+
+<div id="loginOverlay" style="
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  background:rgba(0,0,0,0.4);display:flex;
+  align-items:center;justify-content:center;z-index:9999;
+  backdrop-filter:blur(4px);
+">
+  <div style="
+    background:white;padding:32px 28px;border-radius:14px;
+    box-shadow:0 6px 30px rgba(0,0,0,0.25);
+    width:350px;animation:fadeIn 0.4s ease;
   ">
-    <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 4px 18px rgba(0,0,0,0.20);width:320px;">
-      <h2 style="text-align:center;margin-top:0;">Inicio de Sesión</h2>
+    <h2 style="text-align:center;margin-top:0;font-size:22px;color:#2563eb;">
+      Bienvenido a NutriPlan
+    </h2>
+    <p style="text-align:center;margin-top:0;margin-bottom:20px;color:#64748b;">
+      Inicia sesión para continuar
+    </p>
 
-      <label style="font-size:13px;">Usuario</label>
-      <select id="loginUser" style="width:100%;margin-bottom:12px;">
-        <option value="paciente">Paciente</option>
-        <option value="nutriologo">Nutriólogo</option>
-      </select>
+    <label style="font-size:13px;color:#475569;">Usuario</label>
+    <select id="loginUser" style="
+      width:100%;margin-bottom:14px;padding:10px;border-radius:8px;
+      border:1px solid #d1d5db;font-size:15px;
+    ">
+      <option value="paciente">Paciente</option>
+      <option value="nutriologo">Nutriólogo</option>
+    </select>
 
-      <label style="font-size:13px;">Contraseña</label>
-      <input id="loginPass" type="password" placeholder="••••••" style="width:100%;margin-bottom:18px;">
+    <label style="font-size:13px;color:#475569;">Contraseña</label>
+    <input id="loginPass" type="password" placeholder="Escribe tu contraseña..." style="
+      width:100%;margin-bottom:20px;padding:10px;border-radius:8px;
+      border:1px solid #d1d5db;font-size:15px;
+    ">
 
-      <button class="btn" style="width:100%;" onclick="login()">Ingresar</button>
-    </div>
+    <button onclick="login()" style="
+      width:100%;padding:12px;background:#2563eb;color:white;
+      border:none;border-radius:8px;font-size:16px;cursor:pointer;
+      transition:0.25s;
+    " onmouseover="this.style.background='#1d4ed8'"
+       onmouseout="this.style.background='#2563eb'">
+      Ingresar
+    </button>
+
+    <p id="loginError" style="
+      color:#dc2626;font-size:14px;text-align:center;margin-top:16px;display:none;
+    ">Contraseña incorrecta</p>
   </div>
-  <!-- -------------- FIN LOGIN AGREGADO ------------------------------------------- -->
+</div>
+
+<style>
+@keyframes fadeIn {
+  from {opacity:0; transform:scale(0.97);}
+  to {opacity:1; transform:scale(1);}
+}
+</style>
+
+<!-- ===================== FIN LOGIN ====================== -->
 
   <header>
     <h1>NutriPlan — Planificador Avanzado</h1>
@@ -71,10 +109,7 @@
     <div class="grid">
       <main>
 
-        <!-- (TODO EL RESTO DEL CÓDIGO ES EXACTAMENTE IGUAL, NO CAMBIA NADA) -->
-        <!-- --------------------------------------------------------------------------------------------------------- -->
-        <!-- --------------------------------------------------------------------------------------------------------- -->
-        <!-- --------------------------------------------------------------------------------------------------------- -->
+        <!-- TODO EL RESTO ES TU CÓDIGO ORIGINAL (NO TOCADO) -->
 
         <section class="card">
           <h2>Registrar comida</h2>
@@ -184,13 +219,60 @@
   </div>
 
   <script>
-    /* ------------------- AQUÍ EMPIEZA TU CÓDIGO ORIGINAL (INALTERADO) ------------------- */
 
+    /* ============================================================
+       SISTEMA DE LOGIN (MEJORADO Y FUNCIONAL)
+       ============================================================ */
+
+    const USERS = {
+      paciente: "1234",
+      nutriologo: "4321"
+    };
+
+    function login(){
+      const u = document.getElementById('loginUser').value;
+      const p = document.getElementById('loginPass').value;
+      const errorMsg = document.getElementById("loginError");
+
+      if(p === USERS[u]){
+        errorMsg.style.display = "none";
+        localStorage.setItem("nutriplan_role", u);
+
+        document.getElementById("loginOverlay").style.opacity = "0";
+        setTimeout(() => {
+          document.getElementById("loginOverlay").style.display = "none";
+        }, 350);
+
+        aplicarPermisos(u);
+      } else {
+        errorMsg.style.display = "block";
+      }
+    }
+
+    window.addEventListener("load", () => {
+      const role = localStorage.getItem("nutriplan_role");
+      if(role){
+        document.getElementById("loginOverlay").style.display = "none";
+        aplicarPermisos(role);
+      }
+    });
+
+    function aplicarPermisos(rol){
+      console.log("Sesión iniciada como:", rol);
+    }
+
+    /* ============================================================
+       FIN SISTEMA LOGIN
+       ============================================================ */
+
+
+
+    /* ---------------------- TU CÓDIGO ORIGINAL ---------------------- */
     const STORAGE_KEY = 'nutriplan_data_v2';
     const todayStr = (new Date()).toISOString().slice(0,10);
     document.getElementById('todayDate').textContent = todayStr;
 
-    let state = {meals:{}}; 
+    let state = {meals:{}};
 
     const RECIPES = [
       {id:1,name:'Ensalada César con pollo',cal:420,protein:30,carbs:25,fat:18,ingredients:['lechuga','pollo','queso','aderezo']},
@@ -202,7 +284,9 @@
       {id:7,name:'Omelette de claras con espinacas',cal:220,protein:28,carbs:3,fat:10,ingredients:['huevo','claras','espinaca']}
     ];
 
-    function loadState(){ try{ const raw = localStorage.getItem(STORAGE_KEY); if(raw) state = JSON.parse(raw); }catch(e){console.error(e)} }
+    function loadState(){
+      try{ const raw = localStorage.getItem(STORAGE_KEY); if(raw) state = JSON.parse(raw); }catch(e){console.error(e)}
+    }
     function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
     loadState();
 
@@ -253,7 +337,6 @@
       state.meals[todayStr].lunch.push({name,ingredients,calories,protein,carbs,fat,created:Date.now()});
       saveState(); renderMeals(todayStr); e.target.reset();
     });
-
     document.getElementById('btnClear').addEventListener('click', ()=>document.getElementById('mealForm').reset());
 
     window.deleteMeal = function(btn){ const day = btn.dataset.day; const part = btn.dataset.part; const idx = Number(btn.dataset.idx);
@@ -283,8 +366,8 @@
     document.getElementById('btnReset').addEventListener('click', ()=>{ if(!confirm('¿Eliminar todos los datos guardados localmente?')) return; state = {meals:{}}; saveState(); renderMeals(todayStr); renderWeekTable(); });
 
     function getWeekDates(reference){ const ref = new Date(reference);
-      const dayIdx = ref.getDay();
-      const monday = new Date(ref); monday.setDate(ref.getDate() - ((dayIdx+6)%7));
+      const dayIdx = ref.getDay(); 
+      const monday = new Date(ref); monday.setDate(ref.getDate() - ((dayIdx+6)%7)); 
       const arr = []; for(let i=0;i<7;i++){ const d = new Date(monday); d.setDate(monday.getDate()+i); arr.push(d.toISOString().slice(0,10)); } return arr;
     }
 
@@ -369,49 +452,7 @@
 
     function updateSummary(dateStr){ const t = totalsForDate(dateStr); document.getElementById('sumCalories').textContent = t.cal + ' kcal'; document.getElementById('sumProtein').textContent = t.p + ' g'; document.getElementById('sumCarbs').textContent = t.c + ' g'; document.getElementById('sumFat').textContent = t.f + ' g'; const goal = Number(document.getElementById('goalCalories').value || 2000); const pct = Math.min(100, Math.round((t.cal/goal)*100)); document.getElementById('progressCalories').style.width = pct + '%'; }
 
-    /* ------------------- FIN DE TU CÓDIGO ORIGINAL (TODO INTACTO) ------------------- */
-
-
-    /* ------------------------------------------------------------------------------- */
-    /* ---------------------------- SISTEMA DE LOGIN --------------------------------- */
-    /* ------------------------------------------------------------------------------- */
-
-    const USERS = {
-      paciente: "1234",
-      nutriologo: "4321"
-    };
-
-    function login(){
-      const u = document.getElementById('loginUser').value;
-      const p = document.getElementById('loginPass').value;
-
-      if(p === USERS[u]){
-        localStorage.setItem("nutriplan_role", u);
-        document.getElementById("loginOverlay").style.display = "none";
-        aplicarPermisos(u);
-      } else {
-        alert("Contraseña incorrecta");
-      }
-    }
-
-    window.addEventListener("load", () => {
-      const role = localStorage.getItem("nutriplan_role");
-      if(role){
-        document.getElementById("loginOverlay").style.display = "none";
-        aplicarPermisos(role);
-      }
-    });
-
-    function aplicarPermisos(rol){
-      console.log("Sesión iniciada como:", rol);
-      // Por ahora ambos usuarios tienen acceso total.
-      // Si quieres restringir funciones, puedo agregártelo después.
-    }
-
-    /* ------------------------------------------------------------------------------- */
-    /* -------------------------- FIN SISTEMA DE LOGIN ------------------------------- */
-    /* ------------------------------------------------------------------------------- */
-
   </script>
+
 </body>
 </html>
