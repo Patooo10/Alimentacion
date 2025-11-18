@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sistema de Alimentación Saludable — Single File (Avanzado)</title>
+  <meta name="description" content="Planificador y monitor de hábitos alimenticios (HTML/CSS/JS - todo en un solo archivo)">
+  <style>
+    :root{--accent:#2b8aef;--bg:#f6f8fb;--card:#ffffff;--muted:#6b7280}
+    *{box-sizing:border-box}
+    body{font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;background:var(--bg);margin:0;color:#0f172a}
+    header{background:linear-gradient(90deg,#0ea5e9, #2563eb);color:white;padding:18px 20px;display:flex;align-items:center;justify-content:space-between}
+    header h1{font-size:18px;margin:0}
+    .container{max-width:1200px;margin:22px auto;padding:18px}
+    .grid{display:grid;grid-template-columns:1fr 380px;gap:18px}
+    .card{background:var(--card);border-radius:12px;padding:14px;box-shadow:0 6px 18px rgba(15,23,42,0.06)}
+    h2{margin:0 0 12px 0;font-size:16px}
+    label{font-size:13px;color:var(--muted)}
+    input,select,textarea,button{font:inherit;padding:8px;border-radius:8px;border:1px solid #e6e9ef}
+    textarea{min-height:60px}
+    .meals-list{max-height:240px;overflow:auto}
+    .meal-item{display:flex;justify-content:space-between;gap:12px;padding:8px;border-bottom:1px dashed #eef2f7}
+    .small{font-size:13px;color:var(--muted)}
+    .pill{background:#eef6ff;color:var(--accent);padding:6px 10px;border-radius:999px;font-weight:600}
+    .progress{background:#eef2fb;border-radius:999px;height:12px;overflow:hidden}
+    .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#7dd3fc)}
+    .flex{display:flex;gap:10px;align-items:center}
+    .stack{display:flex;flex-direction:column;gap:8px}
+    .recipe{padding:8px;border-radius:8px;background:#f8fafc}
+    .muted{color:var(--muted)}
+    .btn{background:var(--accent);color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer}
+    .btn.secondary{background:transparent;color:var(--accent);border:1px solid rgba(11,84,160,0.12)}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #eef2f7;text-align:left}
+    aside{display:block}
+    footer{max-width:1200px;margin:0 auto;text-align:center;color:var(--muted);padding:12px}
+    @media (max-width:980px){.grid{grid-template-columns:1fr}.container{padding:12px}}
+  </style>
+</head>
+<body>
+
+  <!-- -------------- LOGIN AGREGADO (NO SE MODIFICÓ NADA DEL RESTO) ---------------- -->
+  <div id="loginOverlay" style="
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:#e8eef5;display:flex;align-items:center;justify-content:center;
+    z-index:9999;
+  ">
+    <div style="background:white;padding:24px;border-radius:12px;box-shadow:0 4px 18px rgba(0,0,0,0.20);width:320px;">
+      <h2 style="text-align:center;margin-top:0;">Inicio de Sesión</h2>
+
+      <label style="font-size:13px;">Usuario</label>
+      <select id="loginUser" style="width:100%;margin-bottom:12px;">
+        <option value="paciente">Paciente</option>
+        <option value="nutriologo">Nutriólogo</option>
+      </select>
+
+      <label style="font-size:13px;">Contraseña</label>
+      <input id="loginPass" type="password" placeholder="••••••" style="width:100%;margin-bottom:18px;">
+
+      <button class="btn" style="width:100%;" onclick="login()">Ingresar</button>
+    </div>
+  </div>
+  <!-- -------------- FIN LOGIN AGREGADO ------------------------------------------- -->
+
+  <header>
+    <h1>NutriPlan — Planificador Avanzado</h1>
+    <div class="flex"><span class="small">Archivo único · HTML/CSS/JS</span></div>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+      <main>
+
+        <!-- (TODO EL RESTO DEL CÓDIGO ES EXACTAMENTE IGUAL, NO CAMBIA NADA) -->
+        <!-- --------------------------------------------------------------------------------------------------------- -->
+        <!-- --------------------------------------------------------------------------------------------------------- -->
+        <!-- --------------------------------------------------------------------------------------------------------- -->
+
+        <section class="card">
+          <h2>Registrar comida</h2>
+          <form id="mealForm">
+            <div class="stack">
+              <label>Nombre de la comida</label>
+              <input id="mealName" placeholder="Ej: Ensalada César" required />
+              <label>Ingredientes (separados por coma)</label>
+              <input id="mealIngredients" placeholder="Lechuga, pollo, queso, aderezo" />
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+                <div><label>Calorías (kcal)</label><input id="mealCalories" type="number" min="0" step="1" value="400" required /></div>
+                <div><label>Proteínas (g)</label><input id="mealProtein" type="number" min="0" step="0.1" value="25" required /></div>
+                <div><label>Carbohidratos (g)</label><input id="mealCarbs" type="number" min="0" step="0.1" value="40" required /></div>
+                <div><label>Grasas (g)</label><input id="mealFat" type="number" min="0" step="0.1" value="12" required /></div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:8px">
+                <button class="btn" type="submit">Registrar</button>
+                <button class="btn secondary" type="button" id="btnClear">Limpiar</button>
+                <button class="btn secondary" type="button" id="btnImport">Importar JSON</button>
+              </div>
+            </div>
+          </form>
+
+          <hr style="margin:12px 0" />
+
+          <h2>Comidas de hoy <span id="todayDate" class="small muted"></span></h2>
+          <div class="meals-list card" id="mealsList" style="padding:8px;">
+          </div>
+        </section>
+
+        <section class="card" style="margin-top:12px">
+          <h2>Planificador semanal avanzado</h2>
+          <div class="stack">
+            <label>Meta calórica diaria</label>
+            <input id="goalCalories" type="number" value="2000" />
+            <label>Macros objetivo (g)</label>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+              <input id="goalProtein" type="number" value="120" placeholder="Proteínas (g)" />
+              <input id="goalCarbs" type="number" value="220" placeholder="Carbs (g)" />
+              <input id="goalFat" type="number" value="70" placeholder="Grasas (g)" />
+            </div>
+            <label>Distribución por comidas (suma 100%)</label>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+              <input id="splitBreakfast" type="number" value="25" />
+              <input id="splitLunch" type="number" value="30" />
+              <input id="splitDinner" type="number" value="30" />
+              <input id="splitSnack" type="number" value="15" />
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn" id="btnGenerateWeek">Generar plan semanal</button>
+              <button class="btn secondary" id="btnApplyWeek">Aplicar plan a calendario</button>
+              <button class="btn secondary" id="btnClearWeek">Limpiar semana</button>
+            </div>
+            <div id="weekResult" class="small muted" style="margin-top:8px;overflow:auto;max-height:260px"></div>
+          </div>
+        </section>
+
+        <section class="card" style="margin-top:12px">
+          <h2>Semana actual</h2>
+          <div id="weekTable" style="overflow:auto"></div>
+        </section>
+
+      </main>
+
+      <aside>
+        <div class="card" style="margin-bottom:12px">
+          <h2>Resumen diario</h2>
+          <div class="stack">
+            <div class="flex" style="justify-content:space-between"><div class="small">Calorías</div><div id="sumCalories" class="pill">0 kcal</div></div>
+            <div class="small">Meta diaria (kcal)</div>
+            <div class="progress" aria-hidden="true"><i id="progressCalories" style="width:0%"></i></div>
+
+            <div style="display:flex;gap:8px;justify-content:space-between;margin-top:8px">
+              <div class="small">Proteínas</div><div id="sumProtein" class="small">0 g</div>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:space-between;">
+              <div class="small">Carbs</div><div id="sumCarbs" class="small">0 g</div>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:space-between;">
+              <div class="small">Grasas</div><div id="sumFat" class="small">0 g</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom:12px">
+          <h2>Recetas y búsqueda</h2>
+          <input id="searchRecipe" placeholder="Buscar receta..." />
+          <div id="recipes" style="margin-top:8px"></div>
+        </div>
+
+        <div class="card">
+          <h2>Herramientas</h2>
+          <div class="flex" style="justify-content:space-between">
+            <div>
+              <button class="btn" id="btnExport">Exportar datos (JSON)</button>
+              <button class="btn secondary" id="btnReset">Resetear datos</button>
+            </div>
+            <div class="muted small">Guardado local con <strong>localStorage</strong>. Puedes descargar tu archivo de la semana actual.</div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer>
+      Creado con ❤️ — Crea habitos Saludables, no Restricciones.
+    </footer>
+  </div>
+
+  <script>
+    /* ------------------- AQUÍ EMPIEZA TU CÓDIGO ORIGINAL (INALTERADO) ------------------- */
+
+    const STORAGE_KEY = 'nutriplan_data_v2';
+    const todayStr = (new Date()).toISOString().slice(0,10);
+    document.getElementById('todayDate').textContent = todayStr;
+
+    let state = {meals:{}}; 
+
+    const RECIPES = [
+      {id:1,name:'Ensalada César con pollo',cal:420,protein:30,carbs:25,fat:18,ingredients:['lechuga','pollo','queso','aderezo']},
+      {id:2,name:'Tazón de quinoa y verduras',cal:520,protein:18,carbs:72,fat:14,ingredients:['quinoa','pimiento','brócoli','zanahoria']},
+      {id:3,name:'Salmón a la plancha con espárragos',cal:480,protein:36,carbs:6,fat:32,ingredients:['salmon','esparragos','limon']},
+      {id:4,name:'Tostada de aguacate y huevo',cal:350,protein:14,carbs:30,fat:18,ingredients:['pan','aguacate','huevo']},
+      {id:5,name:'Bowl proteico (pollo, arroz integral, verduras)',cal:610,protein:45,carbs:60,fat:16,ingredients:['pollo','arroz integral','brocoli']},
+      {id:6,name:'Batido proteico (frutas y proteína)',cal:300,protein:25,carbs:32,fat:4,ingredients:['leche','proteina','fruta']},
+      {id:7,name:'Omelette de claras con espinacas',cal:220,protein:28,carbs:3,fat:10,ingredients:['huevo','claras','espinaca']}
+    ];
+
+    function loadState(){ try{ const raw = localStorage.getItem(STORAGE_KEY); if(raw) state = JSON.parse(raw); }catch(e){console.error(e)} }
+    function saveState(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    loadState();
+
+    function ensureDay(dateStr){ state.meals[dateStr] = state.meals[dateStr] || {breakfast:[], lunch:[], dinner:[], snack:[]} }
+    ensureDay(todayStr);
+
+    function totalsForDate(dateStr){ ensureDay(dateStr); const parts = ['breakfast','lunch','dinner','snack'];
+      return parts.reduce((acc,part)=>{
+        state.meals[dateStr][part].forEach(m=>{acc.cal+=Number(m.calories);acc.p+=Number(m.protein);acc.c+=Number(m.carbs);acc.f+=Number(m.fat)});
+        return acc;
+      },{cal:0,p:0,c:0,f:0});
+    }
+
+    function renderMeals(dateStr){ ensureDay(dateStr);
+      const container = document.getElementById('mealsList'); container.innerHTML='';
+      const parts = ['breakfast','lunch','dinner','snack'];
+      parts.forEach(part=>{
+        const title = ({breakfast:'Desayuno',lunch:'Almuerzo',dinner:'Cena',snack:'Snack'})[part];
+        const box = document.createElement('div'); box.className='card'; box.style.marginBottom='8px';
+        const inner = document.createElement('div');
+        inner.innerHTML = `<div style="display:flex;justify-content:space-between"><strong>${title}</strong><button class='btn secondary' data-day='${dateStr}' data-part='${part}' onclick='addManualMealPrompt(this)'>Añadir</button></div>`;
+        const list = document.createElement('div'); list.style.marginTop='8px';
+        const arr = state.meals[dateStr][part] || [];
+        if(arr.length===0) list.innerHTML = '<div class="small muted">Sin comidas</div>';
+        arr.forEach((m,idx)=>{
+          const div = document.createElement('div'); div.className='meal-item';
+          div.innerHTML = `<div><div style="font-weight:600">${escapeHtml(m.name)}</div><div class="small muted">${escapeHtml(m.ingredients||'--')}</div></div>
+            <div style="text-align:right"><div class="small">${m.calories} kcal</div><div class="small muted">P:${m.protein}g C:${m.carbs}g F:${m.fat}g</div>
+            <div style="margin-top:6px"><button class="btn secondary" data-day="${dateStr}" data-part="${part}" data-idx="${idx}" onclick="deleteMeal(this)">Eliminar</button></div></div>`;
+          list.appendChild(div);
+        });
+        inner.appendChild(list); box.appendChild(inner); container.appendChild(box);
+      });
+      updateSummary(dateStr);
+    }
+
+    function escapeHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+    document.getElementById('mealForm').addEventListener('submit', e=>{
+      e.preventDefault(); const name = document.getElementById('mealName').value.trim();
+      const ingredients = document.getElementById('mealIngredients').value.trim();
+      const calories = Number(document.getElementById('mealCalories').value||0);
+      const protein = Number(document.getElementById('mealProtein').value||0);
+      const carbs = Number(document.getElementById('mealCarbs').value||0);
+      const fat = Number(document.getElementById('mealFat').value||0);
+      if(!name) return alert('Ingresa un nombre');
+      ensureDay(todayStr);
+      state.meals[todayStr].lunch.push({name,ingredients,calories,protein,carbs,fat,created:Date.now()});
+      saveState(); renderMeals(todayStr); e.target.reset();
+    });
+
+    document.getElementById('btnClear').addEventListener('click', ()=>document.getElementById('mealForm').reset());
+
+    window.deleteMeal = function(btn){ const day = btn.dataset.day; const part = btn.dataset.part; const idx = Number(btn.dataset.idx);
+      if(!confirm('Eliminar esta comida?')) return; state.meals[day][part].splice(idx,1); saveState(); renderMeals(day);
+    }
+
+    window.addManualMealPrompt = function(btn){ const day = btn.dataset.day; const part = btn.dataset.part;
+      const name = prompt('Nombre de la comida:'); if(!name) return; const cal = Number(prompt('Calorías (kcal):','300')||0);
+      const prot = Number(prompt('Proteínas (g):','20')||0); const carbs = Number(prompt('Carbs (g):','30')||0); const fat = Number(prompt('Grasas (g):','10')||0);
+      const ing = prompt('Ingredientes (coma):','')||''; state.meals[day][part].push({name,ingredients:ing,calories:cal,protein:prot,carbs:carbs,fat:fat,created:Date.now()}); saveState(); renderMeals(day);
+    }
+
+    const recipesContainer = document.getElementById('recipes');
+    function renderRecipes(list){ recipesContainer.innerHTML=''; list.forEach(r=>{
+      const d = document.createElement('div'); d.className='recipe'; d.innerHTML = `<div style="display:flex;justify-content:space-between"><div><strong>${escapeHtml(r.name)}</strong><div class="small muted">${r.cal} kcal · P:${r.protein}g</div></div><div style="text-align:right"><button class="btn" data-id="${r.id}" onclick="addRecipeToSlot(this)">Añadir</button></div></div><div class="small muted" style="margin-top:6px">Ingredientes: ${escapeHtml((r.ingredients||[]).join(', '))}</div>`; recipesContainer.appendChild(d);
+    }); }
+    renderRecipes(RECIPES);
+
+    window.addRecipeToSlot = function(btn){ const id = Number(btn.dataset.id); const r = RECIPES.find(x=>x.id===id); if(!r) return;
+      const date = prompt('Fecha para añadir (YYYY-MM-DD):', todayStr); if(!date) return; ensureDay(date);
+      const part = prompt('Turno (breakfast, lunch, dinner, snack):','lunch')||'lunch'; if(!['breakfast','lunch','dinner','snack'].includes(part)) return alert('Turno inválido');
+      state.meals[date][part].push({name:r.name,ingredients:r.ingredients.join(', '),calories:r.cal,protein:r.protein,carbs:r.carbs,fat:r.fat,fromRecipe:true}); saveState(); renderMeals(date);
+    }
+
+    document.getElementById('btnExport').addEventListener('click', ()=>{ const data = JSON.stringify(state,null,2); const blob = new Blob([data],{type:'application/json'}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='nutriplan-data.json'; a.click(); URL.revokeObjectURL(url); });
+    document.getElementById('btnImport').addEventListener('click', ()=>{ const input = document.createElement('input'); input.type='file'; input.accept='application/json'; input.onchange = e => { const f = e.target.files[0]; if(!f) return; const reader = new FileReader(); reader.onload = ev=>{ try{ const parsed = JSON.parse(ev.target.result); state = parsed; saveState(); renderMeals(todayStr); renderWeekTable(); alert('Importado con éxito'); }catch(err){ alert('Error al importar: archivo inválido') } }; reader.readAsText(f); }; input.click(); });
+    document.getElementById('btnReset').addEventListener('click', ()=>{ if(!confirm('¿Eliminar todos los datos guardados localmente?')) return; state = {meals:{}}; saveState(); renderMeals(todayStr); renderWeekTable(); });
+
+    function getWeekDates(reference){ const ref = new Date(reference);
+      const dayIdx = ref.getDay();
+      const monday = new Date(ref); monday.setDate(ref.getDate() - ((dayIdx+6)%7));
+      const arr = []; for(let i=0;i<7;i++){ const d = new Date(monday); d.setDate(monday.getDate()+i); arr.push(d.toISOString().slice(0,10)); } return arr;
+    }
+
+    function bestCombinationForTargets(targetCal, targetP, targetC, targetF){
+      let best = {score: Infinity, combo: []};
+      const n = RECIPES.length;
+      for(let i=0;i<n;i++){
+        const a = RECIPES[i];
+        evaluateCombo([a]);
+        for(let j=0;j<n;j++){
+          const b = RECIPES[j];
+          evaluateCombo([a,b]);
+          for(let k=0;k<n;k++){
+            const c = RECIPES[k];
+            evaluateCombo([a,b,c]);
+          }
+        }
+      }
+      function evaluateCombo(arr){
+        const sum = arr.reduce((s,x)=>({cal:s.cal+x.cal, p:s.p+x.protein, c:s.c+x.carbs, f:s.f+x.fat}),{cal:0,p:0,c:0,f:0});
+        const errCal = Math.abs(targetCal - sum.cal);
+        const errP = Math.abs(targetP - sum.p);
+        const errC = Math.abs(targetC - sum.c);
+        const errF = Math.abs(targetF - sum.f);
+        const score = errCal + errP*3 + errC*1.2 + errF*2 + Math.max(0, sum.cal - targetCal)*0.5;
+        if(score < best.score){ best.score = score; best.combo = arr.slice(); }
+      }
+      return best.combo.map(r=>({name:r.name,ingredients:r.ingredients.join(', '),calories:r.cal,protein:r.protein,carbs:r.carbs,fat:r.fat}));
+    }
+
+    function generateWeeklyPlan(){
+      const goal = Number(document.getElementById('goalCalories').value||2000);
+      const gP = Number(document.getElementById('goalProtein').value||100);
+      const gC = Number(document.getElementById('goalCarbs').value||200);
+      const gF = Number(document.getElementById('goalFat').value||60);
+      const splits = {
+        breakfast: Number(document.getElementById('splitBreakfast').value||25)/100,
+        lunch: Number(document.getElementById('splitLunch').value||30)/100,
+        dinner: Number(document.getElementById('splitDinner').value||30)/100,
+        snack: Number(document.getElementById('splitSnack').value||15)/100,
+      };
+      const sumSplits = Object.values(splits).reduce((a,b)=>a+b,0); for(const k in splits) splits[k]=splits[k]/sumSplits;
+      const week = getWeekDates(todayStr);
+      const plan = {};
+      week.forEach(date=>{
+        plan[date] = {breakfast:[], lunch:[], dinner:[], snack:[]};
+        for(const part of Object.keys(splits)){
+          const targetCal = Math.round(goal * splits[part]);
+          const targetP = Math.round(gP * splits[part]);
+          const targetC = Math.round(gC * splits[part]);
+          const targetF = Math.round(gF * splits[part]);
+          const best = bestCombinationForTargets(targetCal, targetP, targetC, targetF);
+          plan[date][part] = best;
+        }
+      });
+      return plan;
+    }
+
+    document.getElementById('btnGenerateWeek').addEventListener('click', ()=>{
+      const plan = generateWeeklyPlan(); const out = document.getElementById('weekResult'); out.innerHTML='';
+      for(const date in plan){ out.innerHTML += `<div style="margin-bottom:8px"><strong>${date}</strong><div class="small muted">` + Object.keys(plan[date]).map(p=>`${p}: ${plan[date][p].map(x=>x.name).join(' | ')||'—'}`).join('<br>') + `</div></div>` }
+      renderWeekPreview(plan);
+    });
+
+    document.getElementById('btnApplyWeek').addEventListener('click', ()=>{
+      const plan = generateWeeklyPlan(); for(const date in plan){ ensureDay(date); for(const part of Object.keys(plan[date])){ state.meals[date][part] = state.meals[date][part].concat(plan[date][part]); } }
+      saveState(); renderWeekTable(); renderMeals(todayStr); alert('Plan semanal aplicado al calendario.');
+    });
+
+    document.getElementById('btnClearWeek').addEventListener('click', ()=>{ if(!confirm('¿Limpiar las comidas de la semana actual?')) return; const week = getWeekDates(todayStr); week.forEach(d=>{ delete state.meals[d]; }); saveState(); renderWeekTable(); renderMeals(todayStr); });
+
+    function renderWeekPreview(plan){ const container = document.getElementById('weekResult'); container.scrollTop=0; }
+
+    function renderWeekTable(){ const container = document.getElementById('weekTable'); const week = getWeekDates(todayStr);
+      let html = '<table><thead><tr><th>Fecha</th><th>Desayuno</th><th>Almuerzo</th><th>Cena</th><th>Snack</th></tr></thead><tbody>';
+      week.forEach(date=>{ ensureDay(date); const p = state.meals[date]; const cell = k => p[k].map(x=>`${escapeHtml(x.name)} (${x.calories} kcal)`).join('<br>')||'<span class="small muted">—</span>';
+        html += `<tr><td>${date}</td><td>${cell('breakfast')}</td><td>${cell('lunch')}</td><td>${cell('dinner')}</td><td>${cell('snack')}</td></tr>`;
+      }); html += '</tbody></table>'; container.innerHTML = html;
+    }
+
+    renderMeals(todayStr); renderWeekTable();
+
+    function updateSummary(dateStr){ const t = totalsForDate(dateStr); document.getElementById('sumCalories').textContent = t.cal + ' kcal'; document.getElementById('sumProtein').textContent = t.p + ' g'; document.getElementById('sumCarbs').textContent = t.c + ' g'; document.getElementById('sumFat').textContent = t.f + ' g'; const goal = Number(document.getElementById('goalCalories').value || 2000); const pct = Math.min(100, Math.round((t.cal/goal)*100)); document.getElementById('progressCalories').style.width = pct + '%'; }
+
+    /* ------------------- FIN DE TU CÓDIGO ORIGINAL (TODO INTACTO) ------------------- */
+
+
+    /* ------------------------------------------------------------------------------- */
+    /* ---------------------------- SISTEMA DE LOGIN --------------------------------- */
+    /* ------------------------------------------------------------------------------- */
+
+    const USERS = {
+      paciente: "1234",
+      nutriologo: "4321"
+    };
+
+    function login(){
+      const u = document.getElementById('loginUser').value;
+      const p = document.getElementById('loginPass').value;
+
+      if(p === USERS[u]){
+        localStorage.setItem("nutriplan_role", u);
+        document.getElementById("loginOverlay").style.display = "none";
+        aplicarPermisos(u);
+      } else {
+        alert("Contraseña incorrecta");
+      }
+    }
+
+    window.addEventListener("load", () => {
+      const role = localStorage.getItem("nutriplan_role");
+      if(role){
+        document.getElementById("loginOverlay").style.display = "none";
+        aplicarPermisos(role);
+      }
+    });
+
+    function aplicarPermisos(rol){
+      console.log("Sesión iniciada como:", rol);
+      // Por ahora ambos usuarios tienen acceso total.
+      // Si quieres restringir funciones, puedo agregártelo después.
+    }
+
+    /* ------------------------------------------------------------------------------- */
+    /* -------------------------- FIN SISTEMA DE LOGIN ------------------------------- */
+    /* ------------------------------------------------------------------------------- */
+
+  </script>
+</body>
+</html>
